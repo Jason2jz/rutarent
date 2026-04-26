@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RutaRent — Mis Viajes</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="navbar-brand" href="dashboard.html">
+    <span>Ruta<b>Rent</b></span>
+  </a>
+  <ul class="navbar-nav">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="nuevo-viaje.html">Nuevo Viaje</a></li>
+    <li><a href="viajes.html">Mis Viajes</a></li>
+    <li><a href="calculadora.html">Calculadora</a></li>
+    <li><a href="#" class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>🚛 Mis Viajes</h2>
+    <a href="nuevo-viaje.html" class="btn btn-primary">+ Nuevo Viaje</a>
+  </div>
+
+  <div class="card">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Ruta</th>
+          <th>Tipo de carga</th>
+          <th>Distancia</th>
+          <th>Flete</th>
+          <th>Gastos</th>
+          <th>Ganancia</th>
+          <th>Estado</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-viajes">
+        <tr><td colspan="9" style="text-align:center; color:#6c757d;">Cargando viajes...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  const API = 'http://localhost:3000/api';
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = 'index.html';
+
+  function cerrarSesion() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    window.location.href = 'index.html';
+  }
+
+  function formatPeso(valor) {
+    return '$' + Math.round(valor).toLocaleString('es-CO');
+  }
+
+  function formatFecha(fecha) {
+    return new Date(fecha).toLocaleDateString('es-CO');
+  }
+
+  async function cargarViajes() {
+    try {
+      const res = await fetch(`${API}/viajes`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const viajes = await res.json();
+      const tbody = document.getElementById('tabla-viajes');
+
+      if (viajes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#6c757d;">No hay viajes registrados aún.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = viajes.map(v => {
+        const totalGastos = v.gastos.acpm + v.gastos.peajes + v.gastos.viaticos + v.gastos.imprevistos;
+        return `
+          <tr>
+            <td>${formatFecha(v.fecha)}</td>
+            <td><strong>${v.origen}</strong> → ${v.destino}</td>
+            <td>${v.tipo_carga}</td>
+            <td>${v.distancia_km} km</td>
+            <td>${formatPeso(v.valor_flete)}</td>
+            <td>${formatPeso(totalGastos)}</td>
+            <td><strong>${formatPeso(v.ganancia_neta)}</strong></td>
+            <td>
+              <span class="badge ${v.estado === 'rentable' ? 'badge-success' : 'badge-danger'}">
+                ${v.estado === 'rentable' ? '✅ Rentable' : '❌ No rentable'}
+              </span>
+            </td>
+            <td>
+              <button onclick="eliminarViaje('${v._id}')" style="background:none; border:none; cursor:pointer; color:#dc3545; font-size:1.1rem;">🗑️</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+    } catch (error) {
+      console.error('Error cargando viajes:', error);
+    }
+  }
+
+  async function eliminarViaje(id) {
+    if (!confirm('¿Seguro que quieres eliminar este viaje?')) return;
+
+    try {
+      const res = await fetch(`${API}/viajes/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.ok) cargarViajes();
+
+    } catch (error) {
+      console.error('Error eliminando viaje:', error);
+    }
+  }
+
+  cargarViajes();
+</script>
+
+</body>
+</html>

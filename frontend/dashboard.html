@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RutaRent — Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="navbar-brand" href="dashboard.html">
+    <span>Ruta<b>Rent</b></span>
+  </a>
+  <ul class="navbar-nav">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="nuevo-viaje.html">Nuevo Viaje</a></li>
+    <li><a href="viajes.html">Mis Viajes</a></li>
+    <li><a href="calculadora.html">Calculadora</a></li>
+    <li><a href="#" class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+  </ul>
+</nav>
+
+<!-- CONTENIDO -->
+<div class="container">
+
+  <div class="page-header">
+    <h2>¡Bienvenido, <span id="nombre-usuario"></span>! 🚛</h2>
+    <a href="nuevo-viaje.html" class="btn btn-primary">+ Registrar Viaje</a>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number" id="total-viajes">0</div>
+      <div class="stat-label">Viajes este mes</div>
+    </div>
+    <div class="stat-card accent">
+      <div class="stat-number" id="ingresos-brutos">$0</div>
+      <div class="stat-label">Ingresos brutos</div>
+    </div>
+    <div class="stat-card danger">
+      <div class="stat-number" id="total-gastos">$0</div>
+      <div class="stat-label">Total gastos</div>
+    </div>
+    <div class="stat-card success">
+      <div class="stat-number" id="ganancia-neta">$0</div>
+      <div class="stat-label">Ganancia neta</div>
+    </div>
+  </div>
+
+  <!-- GRÁFICAS -->
+  <div class="form-grid">
+    <div class="card">
+      <div class="card-title">📊 Ingresos vs Gastos del mes</div>
+      <canvas id="grafica-ingresos"></canvas>
+    </div>
+    <div class="card">
+      <div class="card-title">🗺️ Rutas más rentables</div>
+      <canvas id="grafica-rutas"></canvas>
+    </div>
+  </div>
+
+  <!-- VIAJES RECIENTES -->
+  <div class="card">
+    <div class="card-title">🕐 Viajes recientes</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Ruta</th>
+          <th>Tipo de carga</th>
+          <th>Flete</th>
+          <th>Ganancia</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-viajes">
+        <tr><td colspan="5" style="text-align:center; color:#6c757d;">Cargando viajes...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script src="js/dashboard.js"></script>
+</body>
+</html>

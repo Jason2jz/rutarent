@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RutaRent — Calculadora de Fletes</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="navbar-brand" href="dashboard.html">
+    <span>Ruta<b>Rent</b></span>
+  </a>
+  <ul class="navbar-nav">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="nuevo-viaje.html">Nuevo Viaje</a></li>
+    <li><a href="viajes.html">Mis Viajes</a></li>
+    <li><a href="calculadora.html">Calculadora</a></li>
+    <li><a href="#" class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>🧮 Calculadora de Fletes</h2>
+  </div>
+
+  <div class="form-grid">
+
+    <!-- FORMULARIO -->
+    <div class="card">
+      <p class="card-title">📋 Datos de la oferta</p>
+
+      <div class="form-group">
+        <label>Ciudad de origen</label>
+        <input type="text" class="form-control" id="origen" placeholder="Cereté">
+      </div>
+      <div class="form-group">
+        <label>Ciudad de destino</label>
+        <input type="text" class="form-control" id="destino" placeholder="Bogotá">
+      </div>
+      <div class="form-group">
+        <label>Distancia aproximada (km)</label>
+        <input type="number" class="form-control" id="distancia" placeholder="650">
+      </div>
+      <div class="form-group">
+        <label>Valor que te están ofreciendo ($)</label>
+        <input type="number" class="form-control" id="valor-ofertado" placeholder="4500000">
+      </div>
+      <div class="form-group">
+        <label>Peajes estimados ($)</label>
+        <input type="number" class="form-control" id="peajes" placeholder="220000">
+      </div>
+      <div class="form-group">
+        <label>Viáticos estimados ($)</label>
+        <input type="number" class="form-control" id="viaticos" placeholder="150000">
+      </div>
+
+      <button class="btn btn-primary btn-block" onclick="calcular()">
+        ¿Me conviene este flete?
+      </button>
+    </div>
+
+    <!-- RESULTADO -->
+    <div id="resultado-container" style="display:none">
+      <div class="resultado-card">
+        <div class="resultado-decision" id="decision-texto"></div>
+        <p id="decision-subtexto" style="opacity:0.8; font-size:0.95rem;"></p>
+
+        <div class="resultado-grid">
+          <div class="resultado-item">
+            <div class="label">Valor ofertado</div>
+            <div class="value" id="res-valor"></div>
+          </div>
+          <div class="resultado-item">
+            <div class="label">Costo total estimado</div>
+            <div class="value" id="res-costo"></div>
+          </div>
+          <div class="resultado-item">
+            <div class="label">Ganancia estimada</div>
+            <div class="value" id="res-ganancia"></div>
+          </div>
+          <div class="resultado-item">
+            <div class="label">Rentabilidad</div>
+            <div class="value" id="res-rentabilidad"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px; background:rgba(255,255,255,0.1); border-radius:8px; padding:15px; text-align:left;">
+          <p style="font-size:0.85rem; opacity:0.7; margin-bottom:8px;">Desglose de costos:</p>
+          <p style="font-size:0.9rem;">⛽ ACPM: <strong id="res-acpm"></strong></p>
+          <p style="font-size:0.9rem;">🛣️ Peajes: <strong id="res-peajes"></strong></p>
+          <p style="font-size:0.9rem;">🍽️ Viáticos: <strong id="res-viaticos"></strong></p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  const API = 'http://localhost:3000/api';
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = 'index.html';
+
+  function cerrarSesion() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    window.location.href = 'index.html';
+  }
+
+  function formatPeso(valor) {
+    return '$' + Math.round(valor).toLocaleString('es-CO');
+  }
+
+  async function calcular() {
+    const origen = document.getElementById('origen').value.trim();
+    const destino = document.getElementById('destino').value.trim();
+    const distancia = document.getElementById('distancia').value;
+    const valorOfertado = document.getElementById('valor-ofertado').value;
+    const peajes = document.getElementById('peajes').value || 0;
+    const viaticos = document.getElementById('viaticos').value || 0;
+
+    if (!origen || !destino || !distancia || !valorOfertado) {
+      alert('Por favor completa los campos obligatorios.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/calculadora`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          origen,
+          destino,
+          distancia_km: parseFloat(distancia),
+          valor_ofertado: parseFloat(valorOfertado),
+          peajes_estimados: parseFloat(peajes),
+          viaticos_estimados: parseFloat(viaticos)
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.mensaje);
+        return;
+      }
+
+      // Mostrar resultado
+      document.getElementById('resultado-container').style.display = 'block';
+
+      const decision = document.getElementById('decision-texto');
+      decision.textContent = data.decision === 'ACEPTAR' ? '✅ ACEPTA EL FLETE' : '❌ RECHAZA EL FLETE';
+      decision.className = `resultado-decision ${data.decision === 'ACEPTAR' ? 'aceptar' : 'rechazar'}`;
+
+      document.getElementById('decision-subtexto').textContent =
+        data.decision === 'ACEPTAR'
+          ? `Este flete te deja una ganancia de ${formatPeso(data.ganancia_estimada)}`
+          : `Este flete no cubre tus costos. Perderías ${formatPeso(Math.abs(data.ganancia_estimada))}`;
+
+      document.getElementById('res-valor').textContent = formatPeso(data.valor_ofertado);
+      document.getElementById('res-costo').textContent = formatPeso(data.desglose.costo_total);
+      document.getElementById('res-ganancia').textContent = formatPeso(data.ganancia_estimada);
+      document.getElementById('res-rentabilidad').textContent = data.rentabilidad_porcentaje + '%';
+      document.getElementById('res-acpm').textContent = formatPeso(data.desglose.costo_acpm);
+      document.getElementById('res-peajes').textContent = formatPeso(data.desglose.peajes_estimados);
+      document.getElementById('res-viaticos').textContent = formatPeso(data.desglose.viaticos_estimados);
+
+    } catch (error) {
+      alert('Error de conexión con el servidor.');
+    }
+  }
+</script>
+
+</body>
+</html>

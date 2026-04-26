@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RutaRent — Nuevo Viaje</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a class="navbar-brand" href="dashboard.html">
+    <span>Ruta<b>Rent</b></span>
+  </a>
+  <ul class="navbar-nav">
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="nuevo-viaje.html">Nuevo Viaje</a></li>
+    <li><a href="viajes.html">Mis Viajes</a></li>
+    <li><a href="calculadora.html">Calculadora</a></li>
+    <li><a href="#" class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>📋 Registrar Nuevo Viaje</h2>
+  </div>
+
+  <div class="card">
+    <div class="alert alert-danger" id="alerta"></div>
+    <div class="alert alert-success" id="alerta-success"></div>
+
+    <!-- DATOS DEL VIAJE -->
+    <p class="card-title">📍 Datos del viaje</p>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Ciudad de origen</label>
+        <input type="text" class="form-control" id="origen" placeholder="Cereté">
+      </div>
+      <div class="form-group">
+        <label>Ciudad de destino</label>
+        <input type="text" class="form-control" id="destino" placeholder="Medellín">
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Distancia aproximada (km)</label>
+        <input type="number" class="form-control" id="distancia" placeholder="420">
+      </div>
+      <div class="form-group">
+        <label>Fecha del viaje</label>
+        <input type="date" class="form-control" id="fecha">
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Tipo de carga</label>
+        <select class="form-control" id="tipo-carga">
+          <option value="">Selecciona el tipo</option>
+          <option value="Ganado bovino">Ganado bovino</option>
+          <option value="Productos a granel">Productos a granel</option>
+          <option value="Materiales de construcción">Materiales de construcción</option>
+          <option value="Productos refrigerados">Productos refrigerados</option>
+          <option value="Líquidos">Líquidos</option>
+          <option value="Carga general">Carga general</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Valor del flete cobrado ($)</label>
+        <input type="number" class="form-control" id="valor-flete" placeholder="3200000">
+      </div>
+    </div>
+
+    <!-- GASTOS -->
+    <p class="card-title" style="margin-top:10px;">💸 Gastos del viaje</p>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>ACPM / Combustible ($)</label>
+        <input type="number" class="form-control" id="gasto-acpm" placeholder="588000">
+      </div>
+      <div class="form-group">
+        <label>Peajes ($)</label>
+        <input type="number" class="form-control" id="gasto-peajes" placeholder="180000">
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Viáticos (comida, hospedaje) ($)</label>
+        <input type="number" class="form-control" id="gasto-viaticos" placeholder="120000">
+      </div>
+      <div class="form-group">
+        <label>Imprevistos ($)</label>
+        <input type="number" class="form-control" id="gasto-imprevistos" placeholder="50000">
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-block" onclick="registrarViaje()">
+      Registrar Viaje y Ver Rentabilidad
+    </button>
+  </div>
+
+</div>
+
+<script>
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = 'index.html';
+
+  function cerrarSesion() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    window.location.href = 'index.html';
+  }
+
+  // Fecha de hoy por defecto
+  document.getElementById('fecha').valueAsDate = new Date();
+
+  function mostrarAlerta(msg, tipo = 'danger') {
+    const id = tipo === 'success' ? 'alerta-success' : 'alerta';
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  async function registrarViaje() {
+    const origen = document.getElementById('origen').value.trim();
+    const destino = document.getElementById('destino').value.trim();
+    const distancia = document.getElementById('distancia').value;
+    const fecha = document.getElementById('fecha').value;
+    const tipoCarga = document.getElementById('tipo-carga').value;
+    const valorFlete = document.getElementById('valor-flete').value;
+    const acpm = document.getElementById('gasto-acpm').value || 0;
+    const peajes = document.getElementById('gasto-peajes').value || 0;
+    const viaticos = document.getElementById('gasto-viaticos').value || 0;
+    const imprevistos = document.getElementById('gasto-imprevistos').value || 0;
+
+    if (!origen || !destino || !distancia || !fecha || !tipoCarga || !valorFlete) {
+      mostrarAlerta('Por favor completa todos los campos obligatorios.');
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:3000/api/viajes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          origen,
+          destino,
+          distancia_km: parseFloat(distancia),
+          fecha,
+          tipo_carga: tipoCarga,
+          valor_flete: parseFloat(valorFlete),
+          gastos: {
+            acpm: parseFloat(acpm),
+            peajes: parseFloat(peajes),
+            viaticos: parseFloat(viaticos),
+            imprevistos: parseFloat(imprevistos)
+          }
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        mostrarAlerta(data.mensaje);
+        return;
+      }
+
+      const ganancia = data.viaje.ganancia_neta;
+      const rentabilidad = data.viaje.rentabilidad_porcentaje;
+      const estado = data.viaje.estado;
+
+      mostrarAlerta(
+        `✅ Viaje registrado. Ganancia neta: $${Math.round(ganancia).toLocaleString('es-CO')} (${rentabilidad}%) — ${estado === 'rentable' ? '✅ RENTABLE' : '❌ NO RENTABLE'}`,
+        'success'
+      );
+
+      setTimeout(() => window.location.href = 'viajes.html', 3000);
+
+    } catch (error) {
+      mostrarAlerta('Error de conexión con el servidor.');
+    }
+  }
+</script>
+
+</body>
+</html>

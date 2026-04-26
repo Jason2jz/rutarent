@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RutaRent — Iniciar Sesión</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="login-container">
+  <div class="login-card">
+
+    <div class="login-logo">
+      <h1>Ruta<span>Rent</span></h1>
+      <p>Gestiona tus fletes y conoce tu rentabilidad real</p>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="mostrarTab('login')">Iniciar Sesión</div>
+      <div class="tab" onclick="mostrarTab('registro')">Registrarse</div>
+    </div>
+
+    <!-- ALERTA -->
+    <div class="alert alert-danger" id="alerta"></div>
+    <div class="alert alert-success" id="alerta-success"></div>
+
+    <!-- LOGIN -->
+    <div id="form-login">
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" class="form-control" id="login-email" placeholder="tucorreo@email.com">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" class="form-control" id="login-password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="iniciarSesion()">Entrar</button>
+    </div>
+
+    <!-- REGISTRO -->
+    <div id="form-registro" style="display:none">
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input type="text" class="form-control" id="reg-nombre" placeholder="Carlos Pérez">
+      </div>
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" class="form-control" id="reg-email" placeholder="tucorreo@email.com">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" class="form-control" id="reg-password" placeholder="••••••••">
+      </div>
+
+      <p style="font-weight:700; color:#1a1a2e; margin-bottom:12px; margin-top:5px;">🚛 Datos de tu vehículo</p>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Marca</label>
+          <input type="text" class="form-control" id="reg-marca" placeholder="Kenworth">
+        </div>
+        <div class="form-group">
+          <label>Modelo</label>
+          <input type="text" class="form-control" id="reg-modelo" placeholder="T800">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Año</label>
+          <input type="number" class="form-control" id="reg-anio" placeholder="2008">
+        </div>
+        <div class="form-group">
+          <label>Consumo ACPM (L/km)</label>
+          <input type="number" class="form-control" id="reg-consumo" placeholder="0.35" step="0.01">
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="registrarse()">Crear cuenta</button>
+    </div>
+
+    <p style="text-align:center; margin-top:20px; font-size:0.8rem; color:#6c757d;">
+      by <strong>Souk</strong> — Universidad de Cartagena
+    </p>
+
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+</body>
+</html>
